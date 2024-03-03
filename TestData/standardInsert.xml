@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<db_test_1>
+	<item>
+		<sku>20</sku>
+		<Instock>Yes</Instock>
+		<Facebook>1</Facebook>
+		<IsKCup>0</IsKCup>
+	</item>
+	<item>
+		<sku>5000081171</sku>
+		<Instock>Yes</Instock>
+		<Facebook>1</Facebook>
+		<IsKCup>0</IsKCup>
+	</item>
+	<item>
+		<sku>7602C</sku>
+		<Instock>Yes</Instock>
+		<Facebook>0</Facebook>
+		<IsKCup>1</IsKCup>
+	</item>
+</db_test_1>
