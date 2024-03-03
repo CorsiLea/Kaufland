@@ -1,5 +1,6 @@
 <?php
-require_once("Database.php");
+require_once("SQLiteDatabase.php");
+require_once("MyException.php");
 
 /**
  * Class Parser
@@ -22,7 +23,13 @@ class Parser
      */
     public function __construct($filename, $useConfig, $dbName = "", $tableStructure = array()) 
     {
+        $use_errors = libxml_use_internal_errors(true);
         $xml = simplexml_load_file($filename);
+        if (!$xml) {
+            throw new MyException("Cannot load xml source", __CLASS__,__FUNCTION__,__LINE__, true);
+        }
+        libxml_clear_errors();
+        libxml_use_internal_errors($use_errors);
 
         $this->_xml = $xml;
         $this->_config = $useConfig;
@@ -48,8 +55,13 @@ class Parser
      */
     function parseXMLToDB_auto()
     {
+        //check file has db
+        if(!$this->_xml->getName())
+        {
+            new MyException("No DB defined", __CLASS__, __FUNCTION__, __LINE__, true);
+        }
         // create DB
-        $db = new Database($this->_xml->getName());
+        $db = new SQLiteDatabase($this->_xml->getName());
 
         foreach ($this->_xml->children() as $table) 
         {
