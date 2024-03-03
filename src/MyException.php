@@ -39,6 +39,7 @@ class MyException extends Exception
     	$this->logError($message);
         if($exit)
         {
+            echo $message;
             exit();
         }
     }

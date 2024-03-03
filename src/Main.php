@@ -17,7 +17,9 @@ class Main
     public function __construct() 
     {
         $filename = $this->getFileName();
-        $parser = new Parser($filename, false);
+        $tableStructure = $this->getConfig();
+        $config = !empty($tableStructure);
+        $parser = new Parser($filename, $config, $tableStructure);
         echo $parser->parseXmlToDB();
     }
 
@@ -36,11 +38,6 @@ class Main
 
         // Extract command line arguments
         $arguments = array_slice($_SERVER['argv'], 1);
-        if (count($arguments) > 1) 
-        {
-            new MyException("Too many arguments provided, only the first will be used", __CLASS__, __FUNCTION__, __LINE__, false);
-        }
-
         //get file if exist
         $filename = $arguments[0];
         if(file_exists($filename))
@@ -49,8 +46,28 @@ class Main
         }
         else
         {
-            new MyException("The file doesn't exist", __CLASS__, __FUNCTION__, __LINE__, true);
+            new MyException("The file doesn't exist {$filename}", __CLASS__, __FUNCTION__, __LINE__, true);
         }
+    }
+
+    function getConfig() : array 
+    {
+        $tableStructure = [];
+        // Check if command line arguments are provided
+        if ($_SERVER['argc'] < 3) 
+        {
+            return $tableStructure;
+        }
+        if($_SERVER['argc']%2 != 0)
+        {
+            new MyException("The arguments count is wrong. The call should be php file.php file.xml <tablename> <columns>", __CLASS__, __FUNCTION__, __LINE__, true);
+        }
+
+        for ($i=2; $i < $_SERVER['argc']; $i=$i+2) 
+        { 
+            $tableStructure[$_SERVER['argv'][$i]] = explode(",", $_SERVER['argv'][$i+1]);
+        }
+        return $tableStructure;
     }
 
     /**

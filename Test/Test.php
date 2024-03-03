@@ -26,11 +26,15 @@ class Test
         $this->trackTest("testDifferentColumns", $count, $failed, $total);
         $this->trackTest("testDifferentsTables", $count, $failed, $total);
         $this->trackTest("testErrorLog", $count, $failed, $total);
+        $this->trackTest("testConfigInsert", $count, $failed, $total);
         echo $count . "/" . $total . "\n";
         echo "Failed : " . $failed . "\n";
 
     }
 
+    /**
+     * trackTest        allow to count and keep track of all the test
+     */
     private function trackTest($name, &$count, &$failed,  &$total)
     {
         $total++;
@@ -66,6 +70,7 @@ class Test
         return $passed;
     }
 
+
     /**
      * testStandardInsert
      * 
@@ -93,6 +98,38 @@ class Test
         return $passed;
     }
     
+    
+
+    /**
+     * testStandardInsert
+     * 
+     * for each element in our XML file check it is actually inserted
+     */
+    private function testConfigInsert() : bool
+    {
+        $passed = true;
+        $tableStructure["item"] = array("sku", "Facebook");
+        $xmlParser = new Parser(__DIR__ . "/../TestData/standardInsertConfig.xml", true, $tableStructure);
+        $xmlParser->parseXmlToDB();
+
+        $db = new SQLite3("db_test_4");
+
+        //check the 3 entry and the total
+        $query = "SELECT COUNT(*) AS C FROM item WHERE sku like '20'and Facebook like '1'";
+        $res = $db->query($query);
+        $passed &= $res->fetchArray()["C"] == 1;
+        $query2 = "SELECT COUNT(*) AS C FROM item WHERE sku like '5000081171'";
+        $res2 = $db->query($query2);
+        $passed &= $res2->fetchArray()["C"] == 1;
+        $query3 = "SELECT COUNT(*) AS C FROM item WHERE sku like '7602C' and Facebook like '0'";
+        $res3 = $db->query($query3);
+        $passed &= $res3->fetchArray()["C"] == 1;
+        $query4 = "SELECT count(*) as C FROM sqlite_master WHERE type='table' AND name='abc';";
+        $res4 = $db->query($query4);
+        $passed &= $res4->fetchArray()["C"] == 0;
+    
+        return $passed;
+    }
     /**
      * testDifferentColumns
      * 

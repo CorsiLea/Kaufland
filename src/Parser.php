@@ -17,11 +17,15 @@ class Parser
      * @var bool use a given config or insert the data automatically
      */
     private $_config;
+    /**
+     * @var array [tableName]=>array(columns)
+     */
+    private $_tablesStructure;
 
     /**
      * 
      */
-    public function __construct($filename, $useConfig, $dbName = "", $tableStructure = array()) 
+    public function __construct($filename, $useConfig, $tablesStructure = array()) 
     {
         $use_errors = libxml_use_internal_errors(true);
         $xml = simplexml_load_file($filename);
@@ -33,6 +37,7 @@ class Parser
 
         $this->_xml = $xml;
         $this->_config = $useConfig;
+        $this->_tablesStructure = $tablesStructure;
     }
 
     /**
@@ -87,11 +92,53 @@ class Parser
     }
 
     /**
-     * @TODO configurable
+     * parseXMLToDB_auto
+     * 
+     * insert into db only the configured xml data
+     * <db><table><column>data</column> [...] </table> [...] </db>
      */
-    function parseXMLToDB_config() : String 
+    function parseXMLToDB_config() 
     {
-        return "";
+        //check file has db
+        if(!$this->_xml->getName())
+        {
+            new MyException("No DB defined", __CLASS__, __FUNCTION__, __LINE__, true);
+        }
+        // create DB
+        $db = new SQLiteDatabase($this->_xml->getName());
+
+        foreach ($this->_xml->children() as $table) 
+        {
+            //check if table exist or create table
+            $tableName = $table->getName();
+            
+            // only insert designated tables
+            if(isset($this->_tablesStructure[$tableName]))
+            {
+                $tableStructure = $this->_tablesStructure[$tableName];
+                $db->checkCreateTable($tableName);
+
+                //query column preparation
+                $queryColumns = array();
+                //query values preparation
+                $queryValues = array();
+
+                foreach ($table->children() as $column => $value) 
+                {
+                    //add only designated column
+                    if(in_array($column, $tableStructure))
+                    {
+                        array_push($queryColumns,$column);
+                        array_push($queryValues,"'" . $db->escapeString($value->__toString()) . "'");
+                        //check if column exist or add it
+                        $db->checkCreateColumn($tableName, $column, "text");
+
+                    }
+                }
+                // insert values to table
+                $db->checkInsertValues($tableName, $queryColumns, $queryValues);
+            }
+        }
     }
     
     /**
