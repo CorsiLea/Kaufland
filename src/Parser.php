@@ -23,7 +23,12 @@ class Parser
     private $_tablesStructure;
 
     /**
-     * 
+     * @var Database
+     */
+    private $_db;
+
+    /**
+     * Constructor
      */
     public function __construct($filename, $useConfig, $tablesStructure = array()) 
     {
@@ -38,6 +43,14 @@ class Parser
         $this->_xml = $xml;
         $this->_config = $useConfig;
         $this->_tablesStructure = $tablesStructure;
+
+        //check file has db
+        if(!$this->_xml->getName())
+        {
+            new MyException("No DB defined", __CLASS__, __FUNCTION__, __LINE__, true);
+        }
+        // create DB - if more db option add the config and a switch or if
+        $this->_db = new SQLiteDatabase($this->_xml->getName()); 
     }
 
     /**
@@ -60,19 +73,11 @@ class Parser
      */
     function parseXMLToDB_auto()
     {
-        //check file has db
-        if(!$this->_xml->getName())
-        {
-            new MyException("No DB defined", __CLASS__, __FUNCTION__, __LINE__, true);
-        }
-        // create DB
-        $db = new SQLiteDatabase($this->_xml->getName());
-
         foreach ($this->_xml->children() as $table) 
         {
             //check if table exist or create table
             $tableName = $table->getName();
-            $db->checkCreateTable($tableName);
+            $this->_db->checkCreateTable($tableName);
 
             //query column preparation
             $queryColumns = array();
@@ -82,31 +87,23 @@ class Parser
             foreach ($table->children() as $column => $value) 
             {
                 array_push($queryColumns,$column);
-                array_push($queryValues,"'" . $db->escapeString($value->__toString()) . "'");
+                array_push($queryValues,"'" . $this->_db->escapeString($value->__toString()) . "'");
                 //check if column exist or add it
-                $db->checkCreateColumn($tableName, $column, "text");
+                $this->_db->checkCreateColumn($tableName, $column, "text");
             }
             // insert values to table
-            $db->checkInsertValues($tableName, $queryColumns, $queryValues);
+            $this->_db->checkInsertValues($tableName, $queryColumns, $queryValues);
         }
     }
 
     /**
-     * parseXMLToDB_auto
+     * parseXMLToDB_config
      * 
      * insert into db only the configured xml data
      * <db><table><column>data</column> [...] </table> [...] </db>
      */
     function parseXMLToDB_config() 
     {
-        //check file has db
-        if(!$this->_xml->getName())
-        {
-            new MyException("No DB defined", __CLASS__, __FUNCTION__, __LINE__, true);
-        }
-        // create DB
-        $db = new SQLiteDatabase($this->_xml->getName());
-
         foreach ($this->_xml->children() as $table) 
         {
             //check if table exist or create table
@@ -116,7 +113,7 @@ class Parser
             if(isset($this->_tablesStructure[$tableName]))
             {
                 $tableStructure = $this->_tablesStructure[$tableName];
-                $db->checkCreateTable($tableName);
+                $this->_db->checkCreateTable($tableName);
 
                 //query column preparation
                 $queryColumns = array();
@@ -129,20 +126,20 @@ class Parser
                     if(in_array($column, $tableStructure))
                     {
                         array_push($queryColumns,$column);
-                        array_push($queryValues,"'" . $db->escapeString($value->__toString()) . "'");
+                        array_push($queryValues,"'" . $this->_db->escapeString($value->__toString()) . "'");
                         //check if column exist or add it
-                        $db->checkCreateColumn($tableName, $column, "text");
+                        $this->_db->checkCreateColumn($tableName, $column, "text");
 
                     }
                 }
                 // insert values to table
-                $db->checkInsertValues($tableName, $queryColumns, $queryValues);
+                $this->_db->checkInsertValues($tableName, $queryColumns, $queryValues);
             }
         }
     }
     
     /**
-     * 
+     * Destructor
      */
     public function __destruct() 
     {

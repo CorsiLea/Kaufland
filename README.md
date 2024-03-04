@@ -26,9 +26,13 @@ In addition, the way the code is structured guarantees ease of extension for fut
 
 
 ## Installation
+
 ### Prerequisites
+
 Before installing and running the program, ensure that PHP is installed on your system and SQLite3 is enabled in the php.ini configuration file.
+
 ### Install
+
 To install you need to clone the repository :
 ```
 git clone https://github.com/CorsiLea/Kaufland.git
@@ -51,6 +55,7 @@ To execute the program:
         ```
 
 ## XML Format
+
 the xml has to be formatted as follow :
 ```
 <dbName>
@@ -64,15 +69,18 @@ the xml has to be formatted as follow :
 
 
 ## Reflections
+
 Some reflections about the project
+
 ### Database
+
 Some points in the way I handled the database do not fully satisfy me :
 
-- **Primary Key:** SQLite requires each table to have at least one column, which led me to add an autoincremental id. One improvement would be to allow users to specify the primary key column, potentially via XML attributes or command line options.
-
+- **Primary Key:** To ensure proper data management each row in a table should have a unique field, which led me to add an autoincremental id. One improvement would be to allow users to specify the primary key column, potentially via XML attributes or command line options.
 - **Column typing:** All columns in the SQLite table were defined as text, without specificity. To improve data integrity and query efficiency, it would be interesting to find a way to infer the type or be able to configure it in the XML or command line.
 
 ### Test
+
 Having studied automated testing in school, I recognize its importance and benefits in ensuring software reliability and growth. 
 Despite its importance, I have not had the opportunity to apply automated testing in professional projects. This absence is seen in the test coverage of the current project.
 Although I have added some testing to the project, it is evident that there are numerous features and methods that remain untested.

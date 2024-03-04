@@ -5,14 +5,16 @@ require_once("Parser.php");
 /**
  * Class Main
  * 
- * This is the class lauched from the cmd.
+ * This is the class launched from the cmd.
  * It will manage the input/output of the user and call other classes to work with the data
  */
 class Main
 {
 
     /**
+     * Constructor 
      * 
+     * Manage the arguments and launch the parsing
      */
     public function __construct() 
     {
@@ -20,11 +22,11 @@ class Main
         $tableStructure = $this->getConfig();
         $config = !empty($tableStructure);
         $parser = new Parser($filename, $config, $tableStructure);
-        echo $parser->parseXmlToDB();
+        $parser->parseXmlToDB();
     }
 
     /**
-     * getFileName      check and manage the command line arguments
+     * getFileName      get the filename of the data to collect from the cmd args
      * 
      * @return String $filename     the path of the existing file
      */
@@ -50,6 +52,11 @@ class Main
         }
     }
 
+    /**
+     * getConfig      get the table configuration from the cmd args
+     * 
+     * @return array      the structure => array["tablename"]=>(array columns)
+     */
     function getConfig() : array 
     {
         $tableStructure = [];
@@ -60,7 +67,7 @@ class Main
         }
         if($_SERVER['argc']%2 != 0)
         {
-            new MyException("The arguments count is wrong. The call should be php file.php file.xml <tablename> <columns>", __CLASS__, __FUNCTION__, __LINE__, true);
+            new MyException("The arguments count is wrong. The call should be\n php file.php file.xml <tablename> <columns> [<tablename> <columns> ...]", __CLASS__, __FUNCTION__, __LINE__, true);
         }
 
         for ($i=2; $i < $_SERVER['argc']; $i=$i+2) 
@@ -71,7 +78,7 @@ class Main
     }
 
     /**
-     * 
+     * Destructor
      */
     public function __destruct() 
     {

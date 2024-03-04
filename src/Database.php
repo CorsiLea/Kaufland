@@ -14,7 +14,7 @@ abstract class Database
     private $_database;
 
     /**
-     * 
+     * Constructor
      */
     public function __construct($dbname) 
     {
